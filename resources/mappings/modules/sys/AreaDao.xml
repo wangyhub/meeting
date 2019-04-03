@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.sys.dao.AreaDao">
+    
+	<sql id="areaColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		p.name AS "parent.name"
+	</sql>
+	
+	<sql id="areaJoins">
+		LEFT JOIN sys_office p ON p.id = a.parent_id
+    </sql>
+    
+	<select id="get" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.office.area.id}
+		ORDER BY a.code
+	</select>
+	
+	<select id="findAllList" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.code
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="Area">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM sys_area a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_area(
+			id, 
+			parent_id, 
+			parent_ids, 
+			code, 
+			name, 
+			sort,
+			type, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			code = #{code}, 
+			name = #{name}, 
+			sort = #{sort}, 
+			type = #{type}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sys_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sys_area SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	<!-- 查找省份市区县 -->
+	<select id="getAreaListByCondition" resultType="Area" parameterType="java.util.Map">
+		SELECT 
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids,
+			a.code,
+			a.name,
+			a.sort,
+			a.type
+		FROM sys_area a
+		WHERE del_flag = '0'
+		<if test="type != null">
+			AND a.type = #{type}
+		</if>
+		<if test="pid != null">
+			AND a.parent_id = #{pid}
+		</if>
+	</select>
+	<!--查找父级地区 -->
+	<select id="getParentArea" resultType="Area" parameterType="java.util.Map">
+		SELECT 
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids,
+			a.code,
+			a.name,
+			a.sort,
+			a.type
+		FROM sys_area a
+		where a.id=(
+			select parent_id from sys_area where id=#{cid}
+		)
+	
+	</select>
+	
+	<select id="showAddressDetail" resultType="java.lang.String" parameterType="java.lang.String">
+        SELECT decode('00',
+                      substr(a.id, 3, 2),
+                      (SELECT b.name
+                         FROM sys_area b
+                        WHERE b.id = (substr(a.id, 0, 2) || '0000')),
+                      substr(a.id, 5, 2),
+                      (SELECT b.name
+                         FROM sys_area b
+                        WHERE b.id = (substr(a.id, 0, 2) || '0000')) ||
+                      (SELECT b.name
+                         FROM sys_area b
+                        WHERE b.id = (substr(a.id, 0, 4) || '00')),
+                      (SELECT b.name
+                         FROM sys_area b
+                        WHERE b.id = (substr(a.id, 0, 2) || '0000')) ||
+                      (SELECT b.name
+                         FROM sys_area b
+                        WHERE b.id = (substr(a.id, 0, 4) || '00')) ||
+                      (SELECT b.name 
+                         FROM sys_area b 
+                        WHERE b.id = a.id)) AS "addressDetail"
+          FROM sys_area a
+         WHERE a.del_flag = '0'
+           AND a.id = #{addressCode}
+    </select>
+
+	
+</mapper>

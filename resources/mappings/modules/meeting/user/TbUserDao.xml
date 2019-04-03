@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.user.TbUserDao">
+    
+	<sql id="tbUserColumns">
+		a.id AS "id",
+		a.user_name AS "userName",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.phone AS "phone",
+		a.email AS "email",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="tbUserJoins">
+	</sql>
+    
+	<select id="get" resultType="TbUser">
+		SELECT 
+			<include refid="tbUserColumns"/>
+		FROM tb_user a
+		<include refid="tbUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbUser">
+		SELECT 
+			<include refid="tbUserColumns"/>
+		FROM tb_user a
+		<include refid="tbUserJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbUser">
+		SELECT 
+			<include refid="tbUserColumns"/>
+		FROM tb_user a
+		<include refid="tbUserJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--<select id="findByPhone" resultType="com.lw.modules.meeting.entity.model.LoginUser">
+		SELECT
+			a.ID as userId,a.phone as phone,a.USER_NAME as userName,c.ID as meetingId,c.MEETING_NAME as meetingName
+		FROM TB_USER a
+			LEFT JOIN TB_JOIN b ON a.ID=b.USER_ID
+			LEFT JOIN TB_MEETING c ON c.ID=b.MEETING_ID
+		WHERE a.PHONE = #{phone} AND c.STATUS='1'
+	</select>-->
+
+	<select id="findByPhone" resultType="com.lw.modules.meeting.entity.model.LoginUser">
+		SELECT
+			a.ID as userId,a.phone as phone,a.USER_NAME as userName,b.INVITE_CODE as inviteCode,c.ID as meetingId,c.MEETING_NAME as meetingName
+		FROM TB_USER a
+			LEFT JOIN TB_INVITE_CODE b ON a.PHONE=b.OPERATOR
+			LEFT JOIN (SELECT * FROM TB_MEETING WHERE STATUS='1') c ON c.ID=b.MEETING_ID
+		WHERE a.PHONE = #{phone}
+	</select>
+
+	<select id="findById" parameterType="String" resultType="com.lw.modules.meeting.entity.model.TbSeatContent">
+
+		select c.SEAT_NO as seatNo from TB_USER a left join TB_JOIN b on a.ID = b.USER_ID left join TB_AGENDA_SEAT c on b.ID = c.JOIN_ID
+
+		where a.ID = #{userId}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_user(
+			id,
+			user_name,
+			sex,
+			nation,
+			phone,
+			email,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{userName},
+			#{sex},
+			#{nation},
+			#{phone},
+			#{email},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_user SET 	
+			user_name = #{userName},
+			sex = #{sex},
+			nation = #{nation},
+			phone = #{phone},
+			email = #{email},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_user
+		WHERE id = #{id}
+	</update>
+
+	<select id="getUserById" resultType="com.lw.modules.meeting.entity.model.JoinUser">
+		SELECT ID as userId, USER_NAME as userName, SEX as sex, NATION as nation, PHONE as phone, EMAIL as email
+		FROM TB_USER
+		WHERE ID = #{userId}
+	</select>
+
+	<update id="updateTbUser" parameterType="com.lw.modules.meeting.entity.model.JoinInfo">
+		UPDATE TB_USER set
+							USER_NAME = #{userName,jdbcType=VARCHAR},
+							SEX = #{sex,jdbcType=VARCHAR},
+							NATION = #{nation,jdbcType=VARCHAR},
+							PHONE = #{phone,jdbcType=VARCHAR},
+							email = #{email,jdbcType=VARCHAR},
+							UPDATE_BY = #{updateBy,jdbcType=VARCHAR},
+							UPDATE_DATE = #{updateDate,jdbcType=DATE}
+		WHERE ID = #{userId}
+	</update>
+
+
+	<select id="findMyData" parameterType="String" resultType="com.lw.modules.meeting.entity.model.TbSelfContent">
+
+			select a.USER_NAME as name , a.SEX as sex , a.NATION as nation, b.POSITION as position,a.PHONE as phone,c.COMPANY_NAME as comPany,
+    a.EMAIL as emai from TB_USER a left join TB_JOIN b
+    on a.ID = b.USER_ID   left join TB_MEETING_COMPANY c on b.COMPANY_ID = c.ID where a.ID  =  #{userId}
+    AND b.MEETING_ID = #{meetingId}
+
+	</select>
+
+
+</mapper>

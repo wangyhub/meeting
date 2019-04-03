@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaFieldDao">
+    
+	<sql id="tBaFieldColumns">
+		a.id AS "id",
+		a.code_name AS "codeName",
+		a.field_sort AS "fieldSort",
+		a.field_input AS "fieldInput",
+		a.field_type AS "fieldType",
+		a.physics_type AS "physicsType",
+		a.is_show AS "isShow",
+		a.field_href AS "fieldHref",
+		a.select_model AS "selectModel",
+		a.select_type AS "selectType",
+		a.dict_code AS "dictCode",
+		a.is_select AS "isSelect",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.main_id AS "main.id",
+		a.physics_length AS "physicsLength"
+	</sql>
+	
+	<sql id="tBaFieldJoins">
+		LEFT JOIN t_ba_main_sql b ON b.id = a.main_id
+	</sql>
+    
+	<select id="get" resultType="TBaField">
+		SELECT 
+			<include refid="tBaFieldColumns"/>
+		FROM t_ba_field a
+		<include refid="tBaFieldJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaField">
+		SELECT 
+			<include refid="tBaFieldColumns"/>
+		FROM t_ba_field a
+		<include refid="tBaFieldJoins"/>
+		<where>
+			
+			<if test="main != null and main.id != null and main.id != ''">
+				AND a.main_id = #{main.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.field_sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaField">
+		SELECT 
+			<include refid="tBaFieldColumns"/>
+		FROM t_ba_field a
+		<include refid="tBaFieldJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_field(
+			id,
+			code_name,
+			field_sort,
+			field_input,
+			field_type,
+			physics_type,
+			is_show,
+			field_href,
+			select_model,
+			select_type,
+			dict_code,
+			is_select,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			main_id,
+			physics_length
+		) VALUES (
+			#{id},
+			#{codeName},
+			#{fieldSort},
+			#{fieldInput},
+			#{fieldType},
+			#{physicsType},
+			#{isShow},
+			#{fieldHref},
+			#{selectModel},
+			#{selectType},
+			#{dictCode},
+			#{isSelect},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{main.id},
+			#{physicsLength}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_field SET 	
+			code_name = #{codeName},
+			field_sort = #{fieldSort},
+			field_input = #{fieldInput},
+			field_type = #{fieldType},
+			physics_type = #{physicsType},
+			is_show = #{isShow},
+			field_href = #{fieldHref},
+			select_model = #{selectModel},
+			select_type = #{selectType},
+			dict_code = #{dictCode},
+			is_select = #{isSelect},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			main_id = #{main.id},
+			physics_length = #{physicsLength}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_ba_field
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE main_id = #{main.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>

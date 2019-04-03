@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.workflow.dao.TBaActivityDao">
+    
+	<sql id="tBaActivityColumns">
+		a.id AS "id",
+		a.temp_activity_id AS "tempActivityId",
+		a.apply_code AS "applyCode",
+		a.apply_state AS "applyState",
+		a.apply_id AS "applyId",
+		a.status AS "status",
+		a.review_advice AS "reviewAdvice",
+		a.company_id AS "company.id",
+		a.org_name AS "orgName",
+		a.user_id AS "user.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.activity_name AS "activityName",
+		a.remarks AS "remarks",
+		o9.name AS "company.name",
+		u11.name AS "user.name"
+	</sql>
+	
+	<sql id="tBaActivityJoins">
+		LEFT JOIN sys_office o9 ON o9.id = a.company_id
+		LEFT JOIN sys_user u11 ON u11.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="TBaActivity">
+		SELECT 
+			<include refid="tBaActivityColumns"/>
+		FROM t_ba_activity a
+		<include refid="tBaActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+    <select id="getByTBaActivity" resultType="TBaActivity">
+		SELECT 
+		    (select getworkdays(max(n.create_date), sysdate) from t_ba_note n  where n.activity_id = a.id   and n.temp_note_id = '900cc77ee31144b49dc6f83c791e66e9') dualDay,
+			<include refid="tBaActivityColumns"/>
+		FROM t_ba_activity a
+		<include refid="tBaActivityJoins"/>
+		WHERE a.del_flag != '1'
+		<if test="applyId != null and applyId != ''">
+		   AND a.apply_id = #{applyId}
+		</if>
+	</select>
+		
+	<select id="findList" resultType="TBaActivity">
+		SELECT 
+			<include refid="tBaActivityColumns"/>
+		FROM t_ba_activity a
+		<include refid="tBaActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaActivity">
+		SELECT 
+			<include refid="tBaActivityColumns"/>
+		FROM t_ba_activity a
+		<include refid="tBaActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_activity(
+			id,
+			temp_activity_id,
+			apply_code,
+			apply_state,
+			apply_id,
+			status,
+			review_advice,
+			company_id,
+			org_name,
+			user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			remarks,
+			activity_name
+		) VALUES (
+			#{id},
+			#{tempActivityId},
+			getApplyCode(),
+			#{applyState},
+			#{applyId},
+			#{status},
+			#{reviewAdvice},
+			#{company.id},
+			#{user.name},
+			#{user.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{remarks},
+			#{activityName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_activity SET 	
+			temp_activity_id = #{tempActivityId},
+			apply_state = #{applyState},
+			status = #{status},
+			review_advice = #{reviewAdvice},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		delete from  t_ba_activity  WHERE id = #{id}
+	</update>
+	
+	<select id="countTBaActivity" resultType="TBaActivity">
+        SELECT 
+            <include refid="tBaActivityColumns"/>
+        FROM t_ba_activity a
+        <include refid="tBaActivityJoins"/>
+        <where>
+            a.del_flag = '0'
+            AND a.temp_activity_id = #{tempActivityId}
+        </where>
+    </select>
+    
+    <!-- 根据证书编号查询出流程集合 -->
+    <select id="getByCertcode" resultType="TBaActivity">
+        SELECT 
+          <include refid="tBaActivityColumns"/>
+          FROM t_ba_activity a, t_bz_apply b, sys_office o9, sys_user u11  
+         WHERE a.del_flag = '0'
+           AND o9.id = a.company_id
+           AND u11.id = a.user_id
+           AND a.apply_id = b.id
+           AND b.license_no = #{certCode}
+    </select>
+    
+    <select id="getTBaActivityByCert" resultType="TBaActivity">
+        SELECT 
+          (select getworkdays(max(n.create_date), b.create_date) from t_ba_note n  where n.activity_id = b.activity_id   and n.temp_note_id = '0090f9f375d14311a2a8e824795f9f3f') dualDay,
+          <include refid="tBaActivityColumns"/>
+		  FROM t_ba_activity a, 
+		       t_ba_note b, 
+		       t_bz_apply c, 
+		       sys_office o9, 
+		       sys_user u11 
+		 WHERE a.id = b.activity_id
+		   AND o9.id = a.company_id
+		   AND c.is_pass = '01'
+           AND u11.id = a.user_id
+		   AND a.apply_id = c.id
+		   AND b.status = '1'
+		   AND b.temp_note_id = '7baac302144442409aa9b65df7b7b884'
+		   AND a.create_by = #{createBy.id}
+		   AND c.org_type = #{tBzApply.orgType}
+		   AND c.cert_id = #{tBzApply.certId}
+		 ORDER BY a.update_date ASC
+    </select>
+</mapper>

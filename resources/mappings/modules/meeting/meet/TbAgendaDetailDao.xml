@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbAgendaDetailDao">
+    
+	<sql id="tbAgendaDetailColumns">
+		a.id AS "id",
+		a.agenda_id AS "agendaId",
+		a.agenda_time AS "agendaTime",
+		a.subject AS "subject",
+		a.content AS "content",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+
+	<select id="get" resultType="TbAgendaDetail">
+		SELECT
+		<include refid="tbAgendaDetailColumns"/>
+		FROM tb_agenda_detail a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbAgendaDetail">
+		SELECT 
+			<include refid="tbAgendaDetailColumns"/>
+		FROM tb_agenda_detail a
+		where a.agenda_id = #{agendaId}
+
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findListByAgendaId" resultType="TbAgendaDetail">
+		SELECT
+		<include refid="tbAgendaDetailColumns"/>
+		FROM tb_agenda_detail a
+		WHERE a.agenda_id = #{agendaId}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_agenda_detail(
+			id,
+			agenda_id,
+			agenda_time,
+			subject,
+			content,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{agendaId},
+			#{agendaTime},
+			#{subject},
+			#{content},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_agenda_detail SET 	
+			agenda_id = #{agendaId},
+			agenda_time = #{agendaTime},
+			subject = #{subject},
+			content = #{content},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_agenda_detail
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE agenda_id = #{agendaId}
+			</otherwise>
+		</choose>
+	</update>
+
+	<select id="getAgendaListByAgendaId" resultType="com.lw.modules.meeting.entity.model.AgendaDetail">
+		select a.id AS "id",
+		a.agenda_id AS "agendaId",
+		a.agenda_time AS "agendaTime",
+		a.subject AS "subject",
+		a.content AS "content"
+		FROM tb_agenda_detail a
+		WHERE a.agenda_id = #{agendaId}
+	</select>
+</mapper>

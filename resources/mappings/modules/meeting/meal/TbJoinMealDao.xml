@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meal.TbJoinMealDao">
+    
+	<sql id="tbJoinMealColumns">
+		a.id AS "id",
+		a.meal_id AS "mealId",
+		a.join_id AS "joinId",
+		a.table_num AS "tableNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		c.USER_NAME AS "userName",
+		d.COMPANY_NAME AS "companyName",
+		b.POSITION AS "position"
+	</sql>
+
+	<sql id="tbJoinMealJoins">
+		left join TB_JOIN b on a.JOIN_ID=b.ID
+		left join TB_USER c on b.USER_ID=c.ID
+		left join TB_MEETING_COMPANY d on b.COMPANY_ID=d.ID
+	</sql>
+
+	
+	<select id="findList" resultType="TbJoinMeal">
+		SELECT 
+			<include refid="tbJoinMealColumns"/>
+		FROM tb_join_meal a
+		<include refid="tbJoinMealJoins"/>
+		<where>
+			<if test="mealId != null and mealId != ''">
+				AND a.meal_id = #{mealId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.table_num
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<insert id="insert">
+		INSERT INTO tb_join_meal(
+			id,
+			meal_id,
+			join_id,
+			table_num,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{mealId},
+			#{joinId},
+			#{tableNum},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_join_meal SET 	
+			meal_id = #{mealId},
+			join_id = #{joinId},
+			table_num = #{tableNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_join_meal
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE meal_id = #{mealId}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>

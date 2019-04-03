@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbMeetingPlaceDao">
+    
+	<sql id="tbMeetingPlaceColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.place_name AS "placeName",
+		a.place_tel AS "placeTel",
+		a.place_address AS "placeAddress",
+		a.place_route AS "placeRoute",
+		a.point_x AS "pointX",
+		a.point_y AS "pointY",
+		a.contain AS "contain",
+		a.platform AS "platform",
+		a.region AS "region",
+		a.region_row AS "regionRow",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="tbMeetingPlaceJoins">
+	</sql>
+    
+	<select id="get" resultType="TbMeetingPlace">
+		SELECT 
+			<include refid="tbMeetingPlaceColumns"/>
+		FROM tb_meeting_place a
+		<include refid="tbMeetingPlaceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbMeetingPlace">
+		SELECT 
+			<include refid="tbMeetingPlaceColumns"/>
+		FROM tb_meeting_place a
+		<include refid="tbMeetingPlaceJoins"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbMeetingPlace">
+		SELECT 
+			<include refid="tbMeetingPlaceColumns"/>
+		FROM tb_meeting_place a
+		<include refid="tbMeetingPlaceJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAll" parameterType="String"  resultType="com.lw.modules.meeting.entity.model.AgendaInfo">
+		 	SELECT id as agendaId,
+			meeting_id as meetingId,
+			name as agendaName,
+			place_id as placeId,
+			subject as subject,
+			begin_date as beginDate,
+			end_date as endDate,
+			moderator as moderator
+		FROM tb_meeting_agenda
+		WHERE meeting_id = #{seatId}
+	</select>
+
+
+	<select id="findById"  resultType="com.lw.modules.meeting.entity.model.TbSeatContent">
+
+		select b.BEGIN_DATE as startTime ,b.END_DATE as endTime ,b.NAME as placeName , b.SUBJECT  as subject , c.SEAT_NO as seatNo,  a.PLACE_ADDRESS as placeAddress,a.REGION as region,a.PLATFORM as platform,a.REGION_ROW as regionRow
+		 from TB_MEETING_PLACE a left join TB_MEETING_AGENDA b on a.ID = b.PLACE_ID  left join  TB_AGENDA_SEAT c
+		 on c.AGENDA_ID = b.ID  where b.ID = #{id} and  c.JOIN_ID =
+		 (select  b.ID AS id from TB_USER a left join TB_JOIN b on a.ID = b.USER_ID  where a.ID = #{userId})
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_meeting_place(
+			id,
+			meeting_id,
+			place_name,
+			place_tel,
+			place_address,
+			place_route,
+			point_x,
+			point_y,
+			contain,
+			platform,
+			region,
+			region_row,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{placeName},
+			#{placeTel},
+			#{placeAddress},
+			#{placeRoute},
+			#{pointX},
+			#{pointY},
+			#{contain},
+			#{platform},
+			#{region},
+			#{regionRow},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_meeting_place SET 	
+			meeting_id = #{meetingId},
+			place_name = #{placeName},
+			place_tel = #{placeTel},
+			place_address = #{placeAddress},
+			place_route = #{placeRoute},
+			point_x = #{pointX},
+			point_y = #{pointY},
+			contain = #{contain},
+			platform = #{platform},
+			region = #{region},
+			region_row = #{regionRow},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_meeting_place
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

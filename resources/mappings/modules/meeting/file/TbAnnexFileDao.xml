@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.file.TbAnnexFileDao">
+    
+	<sql id="tbAnnexFileColumns">
+		a.id AS "id",
+		a.modulecode AS "modulecode",
+		a.modulename AS "modulename",
+		a.moduleid AS "moduleid",
+		a.filename AS "filename",
+		a.filetype AS "filetype",
+		a.path AS "path",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="tbAnnexFileJoins">
+	</sql>
+    
+	<select id="get" resultType="TbAnnexFile">
+		SELECT 
+			<include refid="tbAnnexFileColumns"/>
+		FROM tb_annex_file a
+		<include refid="tbAnnexFileJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbAnnexFile">
+		SELECT 
+			<include refid="tbAnnexFileColumns"/>
+		FROM tb_annex_file a
+		<include refid="tbAnnexFileJoins"/>
+		<where>
+            <if test="moduleid != null and moduleid != ''">
+                AND a.moduleid = #{moduleid}
+            </if>
+            <if test="modulecode != null and modulecode != ''">
+                AND a.modulecode = #{modulecode}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbAnnexFile">
+		SELECT 
+			<include refid="tbAnnexFileColumns"/>
+		FROM tb_annex_file a
+		<include refid="tbAnnexFileJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_annex_file(
+			id,
+			modulecode,
+			modulename,
+			moduleid,
+			filename,
+			filetype,
+			path,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{modulecode},
+			#{modulename},
+			#{moduleid},
+			#{filename},
+			#{filetype},
+			#{path},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_annex_file SET 	
+			modulecode = #{modulecode},
+			modulename = #{modulename},
+			moduleid = #{moduleid},
+			filename = #{filename},
+			filetype = #{filetype},
+			path = #{path}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_annex_file
+		WHERE id = #{id}
+	</update>
+
+	<select id="findAAA" resultType="com.lw.modules.meeting.entity.model.FileContent" parameterType="java.lang.String">
+			select ID AS fileId ,filename AS filename from   tb_annex_file  where  moduleid = #{meetId,jdbcType=VARCHAR}
+	</select>
+
+
+	<select id="findById" resultType="TbAnnexFile" parameterType="java.lang.String">
+			select 	a.modulecode AS "modulecode",
+		a.modulename AS "modulename",
+		a.moduleid AS "moduleid",
+		a.filename AS "filename",
+		a.filetype AS "filetype",
+		a.path AS "path",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+		from  tb_annex_file  a  where ID = #{meetId,jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

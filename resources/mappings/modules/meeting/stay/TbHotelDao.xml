@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.stay.TbHotelDao">
+    
+	<sql id="tbHotelColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.hotel_name AS "hotelName",
+		a.hotel_address AS "hotelAddress",
+		a.hotel_phone AS "hotelPhone",
+		a.stay_notice AS "stayNotice",
+		a.point_x AS "pointX",
+		a.point_y AS "pointY",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="tbHotelJoins">
+	</sql>
+    
+	<select id="get" resultType="TbHotel">
+		SELECT 
+			<include refid="tbHotelColumns"/>
+		FROM tb_hotel a
+		<include refid="tbHotelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbHotel">
+		SELECT 
+			<include refid="tbHotelColumns"/>
+		FROM tb_hotel a
+		<include refid="tbHotelJoins"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbHotel">
+		SELECT 
+			<include refid="tbHotelColumns"/>
+		FROM tb_hotel a
+		<include refid="tbHotelJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_hotel(
+			id,
+			meeting_id,
+			hotel_name,
+			hotel_address,
+			hotel_phone,
+			stay_notice,
+			point_x,
+			point_y,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{hotelName},
+			#{hotelAddress},
+			#{hotelPhone},
+			#{stayNotice},
+			#{pointX},
+			#{pointY},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_hotel SET 	
+			meeting_id = #{meetingId},
+			hotel_name = #{hotelName},
+			hotel_address = #{hotelAddress},
+			hotel_phone = #{hotelPhone},
+			stay_notice = #{stayNotice},
+			point_x = #{pointX},
+			point_y = #{pointY}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_hotel
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

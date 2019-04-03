@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.stay.TbStayDao">
+    
+	<sql id="tbStayColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.hotel_id AS "hotelId",
+		a.stay_time AS "stayTime",
+		a.leave_time AS "leaveTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		b.hotel_name AS "hotelName"
+	</sql>
+	
+	<sql id="hotelJoin">
+		left join tb_hotel b on a.hotel_id=b.ID
+	</sql>
+
+	<sql id="joinStayJoin">
+		left join (
+		select stay_id,count(JOIN_ID) joinNum  From tb_join_stay
+		group by stay_id
+		) c on a.ID=c.stay_id
+	</sql>
+
+	<select id="get" resultType="TbStay">
+		SELECT 
+			<include refid="tbStayColumns"/>
+		FROM tb_stay a
+		<include refid="hotelJoin"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbStay">
+		SELECT 
+			<include refid="tbStayColumns"/>
+			,c.joinNum as "joinNum"
+		FROM tb_stay a
+		<include refid="hotelJoin"/>
+		<include refid="joinStayJoin"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_stay(
+			id,
+			meeting_id,
+			hotel_id,
+			stay_time,
+			leave_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+		    #{meetingId},
+			#{hotelId},
+			#{stayTime},
+			#{leaveTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_stay SET 	
+			hotel_id = #{hotelId},
+			stay_time = #{stayTime},
+			leave_time = #{leaveTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_stay
+		WHERE id = #{id}
+	</update>
+
+	<select id="getStayInfo" resultType="com.lw.modules.meeting.entity.model.StayInfo">
+		select s.ID as stayId, s.MEETING_ID as meetingId, s.HOTEL_ID as hotelId, s.STAY_TIME as stayTime,s.LEAVE_TIME as leaveTime,
+		h.HOTEL_NAME as hotelName, h.HOTEL_ADDRESS as hotelAddress, h.HOTEL_PHONE as hotelPhone,
+		h.STAY_NOTICE as stayNotice, h.POINT_X as pointX, h.POINT_Y as pointY
+			from TB_STAY s join TB_HOTEL h on s.HOTEL_ID = h.ID
+				where s.ID in (select STAY_ID from TB_JOIN_STAY
+                    where JOIN_ID = （select ID from TB_JOIN
+                    	where MEETING_ID = #{meetingId} and USER_ID = #{userId}）)
+	</select>
+</mapper>

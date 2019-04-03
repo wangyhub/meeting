@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbCreateCodeDao">
+    
+	<sql id="tbCreateCodeColumns">
+		a.id AS "id",
+		a.create_code AS "createCode",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="tbCreateCodeJoins">
+	</sql>
+    
+	<select id="get" resultType="TbCreateCode">
+		SELECT 
+			<include refid="tbCreateCodeColumns"/>
+		FROM tb_create_code a
+		<include refid="tbCreateCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbCreateCode">
+		SELECT 
+			<include refid="tbCreateCodeColumns"/>
+		FROM tb_create_code a
+		<include refid="tbCreateCodeJoins"/>
+		<where>
+			<if test="createCode != null and createCode != ''">
+				AND a.create_code = #{createCode}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbCreateCode">
+		SELECT 
+			<include refid="tbCreateCodeColumns"/>
+		FROM tb_create_code a
+		<include refid="tbCreateCodeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_create_code(
+			id,
+			create_code,
+			status,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{createCode},
+			#{status},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_create_code SET
+			status = #{status}
+		WHERE create_code = #{createCode}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_create_code
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

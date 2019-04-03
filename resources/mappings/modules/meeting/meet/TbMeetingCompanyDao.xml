@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbMeetingCompanyDao">
+    
+	<sql id="tbMeetingCompanyColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.company_name AS "companyName",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+	</sql>
+
+    
+	<select id="get" resultType="TbMeetingCompany">
+		SELECT 
+			<include refid="tbMeetingCompanyColumns"/>
+		FROM tb_meeting_company a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findListByMeetingId" resultType="TbMeetingCompany">
+		SELECT 
+			<include refid="tbMeetingCompanyColumns"/>
+		FROM tb_meeting_company a
+
+		where a.meeting_id = #{meetingId}
+
+	</select>
+	
+	<select id="findAllList" resultType="TbMeetingCompany">
+		SELECT 
+			<include refid="tbMeetingCompanyColumns"/>
+		FROM tb_meeting_company a
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_meeting_company(
+			id,
+			meeting_id,
+			company_name,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{companyName},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_meeting_company SET 	
+			meeting_id = #{meetingId},
+			company_name = #{companyName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_meeting_company
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE meeting_id = #{meetingId}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.message.TbValidateCodeDao">
+    
+	<sql id="tbValidateCodeColumns">
+		a.id AS "id",
+		a.user_phone AS "userPhone",
+		a.message_time AS "messageTime",
+		a.status AS "status",
+		a.validate_code AS "validateCode"
+	</sql>
+	
+	<sql id="tbValidateCodeJoins">
+	</sql>
+    
+	<select id="get" resultType="TbValidateCode">
+		SELECT 
+			<include refid="tbValidateCodeColumns"/>
+		FROM tb_validate_code a
+		<include refid="tbValidateCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbValidateCode">
+		SELECT 
+			<include refid="tbValidateCodeColumns"/>
+		FROM tb_validate_code a
+		<include refid="tbValidateCodeJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbValidateCode">
+		SELECT 
+			<include refid="tbValidateCodeColumns"/>
+		FROM tb_validate_code a
+		<include refid="tbValidateCodeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_validate_code(
+			id,
+			user_phone,
+			message_time,
+			status,
+			validate_code
+		) VALUES (
+			#{id},
+			#{userPhone},
+			#{messageTime},
+			#{status},
+			#{validateCode}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_validate_code SET 	
+			user_phone = #{userPhone},
+			message_time = #{messageTime},
+			status = #{status},
+			validate_code = #{validateCode}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_validate_code
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

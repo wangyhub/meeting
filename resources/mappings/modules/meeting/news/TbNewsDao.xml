@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.news.TbNewsDao">
+    
+	<sql id="tbNewsColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.title AS "title",
+		a.news_time AS "newsTime",
+		a.issuer AS "issuer",
+		a.content AS "content",
+		a.is_top AS "isTop",
+		a.status AS "status",
+		a.type AS "type",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="tbNewsJoins">
+	</sql>
+    
+	<select id="get" resultType="TbNews">
+		SELECT 
+			<include refid="tbNewsColumns"/>
+		FROM tb_news a
+		<include refid="tbNewsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbNews">
+		SELECT 
+			<include refid="tbNewsColumns"/>
+		FROM tb_news a
+		<include refid="tbNewsJoins"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_news(
+			id,
+			meeting_id,
+			title,
+			news_time,
+			issuer,
+			content,
+			is_top,
+			status,
+			type,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{title},
+			#{newsTime},
+			#{issuer},
+			#{content},
+			#{isTop},
+			#{status},
+			#{type},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_news SET 	
+			meeting_id = #{meetingId},
+			title = #{title},
+			news_time = #{newsTime},
+			issuer = #{issuer},
+			content = #{content},
+			is_top = #{isTop},
+			status = #{status},
+			type = #{type},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_news
+		WHERE id = #{id}
+	</update>
+
+	<select id="findAll"  parameterType="String" resultType="com.lw.modules.meeting.entity.model.TbNewsContent">
+			select  a.ID AS newsId, a.NEWS_TIME as newsTime,
+			a.TITLE as title from tb_news a left join
+			TB_MEETING b on a.MEETING_ID = b.ID  where
+			 a.MEETING_ID = #{newsId}  and  a.status = '1'
+	</select>
+
+	<select id="findById" parameterType="String" resultType="com.lw.modules.meeting.entity.model.TbNewsContent">
+		select CONTENT AS content, ISSUER AS issuer ,TITLE as title,NEWS_TIME as newsTime from tb_news  where  ID = #{id}
+	</select>
+
+	<update id="updateStatus">
+		UPDATE tb_news SET
+			  status = #{status},
+			  update_by = #{updateBy.id},
+			  update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

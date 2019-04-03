@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbJoinDao">
+    
+	<sql id="tbJoinColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.meeting_id AS "meetingId",
+		a.join_type AS "joinType",
+		a.company_id AS "companyId",
+		a.position AS "position",
+		a.invite_code AS "inviteCode",
+		a.is_come_station AS "isComeStation",
+		a.come_number AS "comeNumber",
+		a.come_station AS "comeStation",
+		a.come_time AS "comeTime",
+		a.come_address AS "comeAddress",
+		a.is_send_station AS "isSendStation",
+		a.go_number AS "goNumber",
+		a.go_station AS "goStation",
+		a.go_time AS "goTime",
+		a.go_address AS "goAddress",
+		a.is_live AS "isLive",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		b.USER_NAME AS "userName",
+		b.SEX AS "sex",
+		b.NATION AS "nation",
+		b.PHONE AS "phone",
+		b.EMAIL AS "email",
+		c.COMPANY_NAME AS "companyName"
+	</sql>
+	
+	<sql id="userJoin">
+		left join TB_USER b on a.USER_ID=b.ID
+	</sql>
+
+	<sql id="companyJoin">
+		left join TB_MEETING_COMPANY c on a.COMPANY_ID=c.ID
+	</sql>
+    
+	<select id="get" resultType="TbJoin">
+		SELECT 
+			<include refid="tbJoinColumns"/>
+		FROM tb_join a
+		<include refid="userJoin"/>
+		<include refid="companyJoin"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbJoin">
+		SELECT 
+			<include refid="tbJoinColumns"/>
+		FROM tb_join a
+		<include refid="userJoin"/>
+		<include refid="companyJoin"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+			<if test="companyId != null and companyId != ''">
+				AND a.company_id = #{companyId}
+			</if>
+			<if test="userName != null and userName != ''">
+				AND b.USER_NAME like '%'||#{userName}||'%'
+			</if>
+			<if test="phone != null and phone != ''">
+				AND b.phone = #{phone}
+			</if>
+			<if test="companyName != null and companyName != ''">
+				AND c.company_name like '%'||#{companyName}||'%'
+			</if>
+			<if test="chooseJoin != null and chooseJoin != ''">
+				and a.ID not in(
+					select JOIN_ID From TB_AGENDA_SEAT
+					where AGENDA_ID = #{chooseJoin}
+				)
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.company_id,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_join(
+			id,
+			user_id,
+			meeting_id,
+			join_type,
+			company_id,
+			position,
+			invite_code,
+			is_come_station,
+			come_number,
+			come_station,
+			come_time,
+			come_address,
+			is_send_station,
+			go_number,
+			go_station,
+			go_time,
+			go_address,
+			is_live,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{user.id},
+			#{meetingId},
+			#{joinType},
+			#{companyId},
+			#{position},
+			#{inviteCode},
+			#{isComeStation},
+			#{comeNumber},
+			#{comeStation},
+			#{comeTime},
+			#{comeAddress},
+			#{isSendStation},
+			#{goNumber},
+			#{goStation},
+			#{goTime},
+			#{goAddress},
+			#{isLive},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_join SET 	
+			user_id = #{user.id},
+			meeting_id = #{meetingId},
+			join_type = #{joinType},
+			company_id = #{companyId},
+			position = #{position},
+			invite_code = #{inviteCode},
+			is_come_station = #{isComeStation},
+			come_number = #{comeNumber},
+			come_station = #{comeStation},
+			come_time = #{comeTime},
+			come_address = #{comeAddress},
+			is_send_station = #{isSendStation},
+			go_number = #{goNumber},
+			go_station = #{goStation},
+			go_time = #{goTime},
+			go_address = #{goAddress},
+			is_live = #{isLive},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_join
+		WHERE id = #{id}
+	</update>
+
+	<select id="getDepartmentList" resultType="com.lw.modules.meeting.entity.model.JoinDepartment">
+		select VALUE as departmentCode, LABEL as departmentName
+		from SYS_DICT
+		where TYPE = 'join_department'
+		order by SORT ASC
+	</select>
+
+	<insert id="addTbJoin" parameterType="com.lw.modules.meeting.entity.model.JoinInfo">
+		INSERT INTO TB_JOIN
+		(ID, USER_ID, MEETING_ID, JOIN_TYPE,
+		COMPANY_ID, POSITION, INVITE_CODE,
+		IS_COME_STATION, COME_NUMBER, COME_STATION, COME_TIME, COME_ADDRESS,
+		IS_SEND_STATION, GO_NUMBER, GO_STATION, GO_TIME, GO_ADDRESS,
+		IS_LIVE, CREATE_BY, CREATE_DATE)
+		VALUES (#{id,jdbcType=VARCHAR},#{userId,jdbcType=VARCHAR},#{meetingId,jdbcType=VARCHAR},#{joinType,jdbcType=VARCHAR},
+		#{companyId,jdbcType=VARCHAR},#{position,jdbcType=VARCHAR},#{inviteCode,jdbcType=VARCHAR},
+		#{isComeStation,jdbcType=VARCHAR},#{comeNumber,jdbcType=VARCHAR}, #{comeStation,jdbcType=VARCHAR},#{comeTime,jdbcType=DATE},#{comeAddress,jdbcType=VARCHAR},
+		#{isSendStation,jdbcType=VARCHAR},#{goNumber,jdbcType=VARCHAR},#{goStation,jdbcType=VARCHAR},#{goTime,jdbcType=DATE},#{goAddress,jdbcType=VARCHAR},
+		#{isLive,jdbcType=VARCHAR},
+		#{createBy,jdbcType=VARCHAR},#{createDate,jdbcType=DATE})
+	</insert>
+
+	<update id="updateJoinInfo" parameterType="com.lw.modules.meeting.entity.model.JoinInfo">
+		UPDATE TB_JOIN set
+			join_type = #{joinType,jdbcType=VARCHAR},
+			company_id = #{companyId,jdbcType=VARCHAR},
+			position = #{position,jdbcType=VARCHAR},
+			invite_code = #{inviteCode,jdbcType=VARCHAR},
+			is_come_station = #{isComeStation,jdbcType=VARCHAR},
+			come_time = #{comeTime,jdbcType=VARCHAR},
+			come_number = #{comeNumber,jdbcType=VARCHAR},
+			come_station = #{comeStation,jdbcType=VARCHAR},
+			come_address = #{comeAddress,jdbcType=VARCHAR},
+			is_send_station = #{isSendStation,jdbcType=VARCHAR},
+			go_time = #{goTime,jdbcType=VARCHAR},
+			go_number = #{goNumber,jdbcType=VARCHAR},
+			go_station = #{goStation,jdbcType=VARCHAR},
+			go_address = #{goAddress,jdbcType=VARCHAR},
+			is_live = #{isLive,jdbcType=VARCHAR},
+			update_by = #{updateBy,jdbcType=VARCHAR},
+			update_date = #{updateDate,jdbcType=DATE}
+		WHERE ID = #{id}
+	</update>
+
+	<select id="getJoinInfo" resultType="com.lw.modules.meeting.entity.model.JoinInfo">
+		select u.ID as userId, u.USER_NAME as userName, u.SEX as sex, u.NATION as nation, u.PHONE as phone, u.EMAIL as email,
+		j.ID as id, j.MEETING_ID as meetingId, j.JOIN_TYPE as joinType, j.COMPANY_ID as companyId, j.POSITION as position, j.INVITE_CODE as inviteCode,
+		j.IS_COME_STATION isComeStation, j.COME_NUMBER as comeNumber,j.COME_STATION as comeStation,j.COME_TIME as comeTime,j.COME_ADDRESS as comeAddress,
+		j.IS_SEND_STATION as isSendStation, j.GO_NUMBER as goNumber, j.GO_STATION as goStation, j.GO_TIME as goTime, j.GO_ADDRESS as goAddress,
+		j.IS_LIVE as isLive
+		from TB_USER u left join TB_JOIN j on u.ID = j.USER_ID
+		where MEETING_ID = #{meetingId} and u.ID = #{userId}
+	</select>
+
+    <select id="getUserInfo" resultType="com.lw.modules.meeting.entity.model.JoinInfo">
+        SELECT ID as userId,
+                USER_NAME as userName,
+                SEX as sex,
+                NATION as nation,
+                PHONE as phone,
+                EMAIL as email
+        FROM TB_USER WHERE ID = #{userId}
+    </select>
+
+	<select id="getMeetingCompanyList" resultType="com.lw.modules.meeting.entity.model.MeetingCompany">
+		SELECT ID as companyId,
+				COMPANY_NAME as companyName,
+				MEETING_ID as meetingId
+		FROM TB_MEETING_COMPANY WHERE MEETING_ID = #{meetingId}
+	</select>
+</mapper>

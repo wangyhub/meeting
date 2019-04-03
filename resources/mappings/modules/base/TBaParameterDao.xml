@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaParameterDao">
+    
+	<sql id="tBaParameterColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.sort AS "sort",
+		a.use_state AS "useState",
+		a.para_value AS "paraValue",
+		a.para_key AS "paraKey",
+		a.temp_id AS "tempId.id",
+		a.para_name AS "paraName",
+		a.para_type AS "paraType.id",
+		o3.label AS "tempId.label",
+		o4.label AS "paraType.label"
+	</sql>
+	
+	<sql id="tBaParameterJoins">
+	    LEFT JOIN sys_dict o3 ON o3.id = a.temp_id
+        LEFT JOIN sys_dict o4 ON o4.id = a.para_type
+	</sql>
+    
+	<select id="get" resultType="TBaParameter">
+		SELECT 
+			<include refid="tBaParameterColumns"/>
+		FROM t_ba_parameter a
+		<include refid="tBaParameterJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaParameter">
+		SELECT 
+			<include refid="tBaParameterColumns"/>
+		FROM t_ba_parameter a
+		<include refid="tBaParameterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="tempId != null and tempId.id != null and tempId.id != ''">
+                AND a.temp_id = #{tempId.id}
+            </if>
+            <if test="paraName != null and paraName != ''">
+                AND a.para_name LIKE 
+                    <if test="dbName == 'oracle'">'%'||#{paraName}||'%'</if>
+                    <if test="dbName == 'mssql'">'%'+#{paraName}+'%'</if>
+                    <if test="dbName == 'mysql'">concat('%',#{paraName},'%')</if>
+            </if>
+            <if test="paraKey != null and paraKey != ''">
+                AND a.para_key = #{paraKey}
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaParameter">
+		SELECT 
+			<include refid="tBaParameterColumns"/>
+		FROM t_ba_parameter a
+		<include refid="tBaParameterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_parameter(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			sort,
+			use_state,
+			para_value,
+			para_key,
+			temp_id,
+			para_name,
+			para_type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{sort},
+			#{useState},
+			#{paraValue},
+			#{paraKey},
+			#{tempId.id},
+			#{paraName},
+			#{paraType.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_parameter SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			sort = #{sort},
+			use_state = #{useState},
+			para_value = #{paraValue},
+			para_key = #{paraKey},
+			temp_id = #{tempId.id},
+			para_name = #{paraName},
+			para_type = #{paraType.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE t_ba_parameter SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbInviteCodeDao">
+    
+	<sql id="tbInviteCodeColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.invite_code AS "inviteCode",
+		a.status AS "status",
+		a.operator AS "operator",
+		a.operate_time AS "operateTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="tbInviteCodeJoins">
+	</sql>
+    
+	<select id="get" resultType="TbInviteCode">
+		SELECT 
+			<include refid="tbInviteCodeColumns"/>
+		FROM tb_invite_code a
+		<include refid="tbInviteCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbInviteCode">
+		SELECT 
+			<include refid="tbInviteCodeColumns"/>
+		FROM tb_invite_code a
+		<include refid="tbInviteCodeJoins"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbInviteCode">
+		SELECT 
+			<include refid="tbInviteCodeColumns"/>
+		FROM tb_invite_code a
+		<include refid="tbInviteCodeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="checkCode" resultType="com.lw.modules.meeting.entity.model.InviteCodeModel" parameterType="com.lw.modules.meeting.entity.model.ParamsModel">
+		SELECT a.ID AS id, a.MEETING_ID AS meetingId, b.MEETING_NAME AS meetingName, b.SPONSOR AS sponsor,
+			to_char(b.START_TIME, 'yyyy-mm-dd hh24:mi:ss') as startTime, to_char(b.END_TIME, 'hh24:mi:ss') as endTime
+		 FROM TB_INVITE_CODE a
+		 LEFT JOIN TB_MEETING b ON a.MEETING_ID = b.ID
+		 WHERE a.INVITE_CODE = #{code} AND a.STATUS = '0'
+	</select>
+
+	<update id="updateCodeStatus" parameterType="com.lw.modules.meeting.entity.model.InviteCodeModel">
+		UPDATE tb_invite_code SET
+			status = '1',
+			operator = #{phone},
+			operate_time = SYSDATE
+		WHERE id = #{id}
+	</update>
+
+	<update id="bindingCode" parameterType="com.lw.modules.meeting.entity.model.ParamsModel">
+		UPDATE tb_invite_code SET
+			status = '1',
+			operator = #{phone},
+			operate_time = SYSDATE
+		where invite_code = #{code}
+	</update>
+
+	<insert id="insert">
+		INSERT INTO tb_invite_code(
+			id,
+			meeting_id,
+			invite_code,
+			status,
+			operator,
+			operate_time,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{inviteCode},
+			#{status},
+			#{operator},
+			#{operateTime},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_invite_code SET 	
+			meeting_id = #{meetingId},
+			invite_code = #{inviteCode},
+			status = #{status},
+			operator = #{operator},
+			operate_time = #{operateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_invite_code
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

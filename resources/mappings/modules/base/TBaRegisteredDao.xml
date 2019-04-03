@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaRegisteredDao">
+    
+	<sql id="tBaRegisteredColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.org_code AS "orgCode",
+		a.user_id AS "userId",
+		a.phone AS "phone",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u4.name AS "user.name"
+	</sql>
+	
+	<sql id="tBaRegisteredJoins">
+		
+	</sql>
+    
+	<select id="get" resultType="TBaRegistered">
+		SELECT 
+			<include refid="tBaRegisteredColumns"/>
+		FROM t_ba_registered a
+		<include refid="tBaRegisteredJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_registered(
+			id,
+			name,
+			org_code,
+			user_id,
+			phone,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{orgCode},
+			#{userId},
+			#{phone},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_registered SET 	
+			name = #{name},
+			org_code = #{orgCode},
+			user_id = #{userId},
+			phone = #{phone},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE t_ba_registered SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="checkName" parameterType="java.util.Map" resultType="TBaRegistered">
+        SELECT * 
+          FROM T_BA_REGISTERED a 
+        WHERE 1 = 1
+        <if test="name != null">
+            AND a.NAME = #{name}
+        </if>
+        <if test="id != null">
+            AND a.user_id != #{id}
+        </if>
+    </select>
+    
+    <select id="checkOrgCode" parameterType="java.util.Map" resultType="TBaRegistered">
+        SELECT * 
+          FROM T_BA_REGISTERED a 
+         WHERE 1 = 1
+        <if test="orgCode != null">
+            AND a.org_code = #{orgCode}
+        </if>
+        <if test="id != null">
+            AND a.user_id! = #{id}
+        </if>
+    </select>
+</mapper>

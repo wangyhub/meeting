@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaMainSqlDao">
+    
+	<sql id="tBaMainSqlColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.remarks AS "remarks",
+		a.head_sql AS "headSql",
+		a.foot_sql AS "footSql",
+		a.sql_flag AS "sqlFlag",
+		a.sql_show AS "sqlShow"
+	</sql>
+	
+	<sql id="tBaMainSqlJoins">
+	</sql>
+    
+	<select id="get" resultType="TBaMainSql">
+		SELECT 
+			<include refid="tBaMainSqlColumns"/>
+		FROM t_ba_main_sql a
+		<include refid="tBaMainSqlJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaMainSql">
+		SELECT 
+			<include refid="tBaMainSqlColumns"/>
+		FROM t_ba_main_sql a
+		<include refid="tBaMainSqlJoins"/>
+		<where>
+			
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaMainSql">
+		SELECT 
+			<include refid="tBaMainSqlColumns"/>
+		FROM t_ba_main_sql a
+		<include refid="tBaMainSqlJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_main_sql(
+			id,
+			title,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			remarks,
+			head_sql,
+			foot_sql,
+			sql_flag,
+			sql_show
+		) VALUES (
+			#{id},
+			#{title},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{remarks},
+			#{headSql},
+			#{footSql},
+			#{sqlFlag},
+			#{sqlShow}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_main_sql SET 	
+			title = #{title},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			head_sql = #{headSql},
+			foot_sql = #{footSql},
+			sql_flag = #{sqlFlag},
+			sql_show = #{sqlShow}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_ba_main_sql
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 检测是否是可执行的sql语句 -->
+	<select id="checkIsSql" resultType="int" parameterType="java.util.Map" >
+	   ${headSql}
+	</select>
+	
+	<!-- 获取查询条件集类型 -->
+	<select id="getResultTypeList" resultType="TBaField" parameterType="java.util.Map" >
+	    SELECT a.COLUMN_NAME AS "codeName",
+               a.DATA_TYPE   AS "physicsType",
+               a.DATA_LENGTH AS "physicsLength",
+               A.COLUMN_ID   AS "fieldSort"
+          FROM user_tab_columns a 
+         WHERE a.table_name = #{tableName}
+         ORDER BY a.COLUMN_ID ASC
+	</select>
+
+	<!-- 创建临时视图 -->
+	<update id="createTempView" parameterType="java.util.Map">
+		${createViewSql}
+	</update>
+	
+	<!-- 删除临时视图 -->
+	<update id="deleteTempView" parameterType="java.util.Map">
+		${deleteViewSql}
+	</update>
+	
+	
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbAgendaSeatDao">
+    
+	<sql id="tbAgendaSeatColumns">
+		a.id AS "id",
+		a.agenda_id AS "agendaId",
+		a.join_id AS "joinId",
+		a.seat_no AS "seatNo",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="tbAgendaSeatJoins">
+	</sql>
+    
+	<select id="get" resultType="TbAgendaSeat">
+		SELECT 
+			<include refid="tbAgendaSeatColumns"/>
+		FROM tb_agenda_seat a
+		<include refid="tbAgendaSeatJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbAgendaSeat">
+		SELECT 
+			<include refid="tbAgendaSeatColumns"/>
+		FROM tb_agenda_seat a
+		<include refid="tbAgendaSeatJoins"/>
+		<where>
+			<if test="agendaId != null and agendaId != ''">
+				AND a.agenda_id = #{agendaId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSeatNoList" resultType="string">
+		SELECT
+			a.seat_no||','||c.USER_NAME AS "seatNo"
+		FROM tb_agenda_seat a
+		join TB_JOIN b on a.JOIN_ID=b.ID
+		join TB_USER c on b.USER_ID=c.ID
+		where a.agenda_id = #{agendaId}
+		ORDER BY a.seat_no
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_agenda_seat(
+			id,
+			agenda_id,
+			join_id,
+			seat_no,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{agendaId},
+			#{joinId},
+			#{seatNo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_agenda_seat SET 	
+			agenda_id = #{agendaId},
+			join_id = #{joinId},
+			seat_no = #{seatNo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_agenda_seat
+		WHERE agenda_id = #{agendaId} and seat_no = #{seatNo}
+	</update>
+	
+</mapper>

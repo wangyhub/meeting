@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaTableFieldDao">
+    
+	<sql id="tBaTableFieldColumns">
+		a.id AS "id",
+		a.field_code AS "fieldCode",
+		a.field_name AS "fieldName",
+		a.field_length AS "fieldLength",
+		a.field_type AS "fieldType",
+		a.is_null AS "isNull",
+		a.is_show_form AS "isShowForm",
+		a.is_show_list AS "isShowList",
+		a.control_type AS "controlType",
+		a.control_length AS "controlLength",
+		a.is_query_condition AS "isQueryCondition",
+		a.query_type AS "queryType",
+		a.field_href AS "fieldHref",
+		a.field_valid_rule AS "fieldValidRule",
+		a.dict_table AS "dictTable",
+		a.dict_code AS "dictCode",
+		a.dict_text AS "dictText",
+		a.farther_table AS "fartherTable",
+		a.farther_field AS "fartherField",
+		a.is_datebase_field AS "isDatebaseField",
+		a.list_sql AS "listSql",
+		a.table_id AS "tableId.id",
+		a.old_field_code as "oldFieldCode",
+		a.sort as "sort",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="tBaTableFieldJoins">
+		LEFT JOIN t_ba_table_config b ON b.id = a.table_id
+	</sql>
+    
+	<select id="get" resultType="TBaTableField">
+		SELECT 
+			<include refid="tBaTableFieldColumns"/>
+		FROM t_ba_table_field a
+		<include refid="tBaTableFieldJoins"/>
+		WHERE a.id = #{id}
+		order by a.sort asc
+	</select>
+	
+	<select id="findList" resultType="TBaTableField">
+		SELECT 
+			<include refid="tBaTableFieldColumns"/>
+		FROM t_ba_table_field a
+		<include refid="tBaTableFieldJoins"/>
+		<where>
+			
+			<if test="tableId != null and tableId != ''">
+				AND a.table_id = #{tableId.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaTableField">
+		SELECT 
+			<include refid="tBaTableFieldColumns"/>
+		FROM t_ba_table_field a
+		<include refid="tBaTableFieldJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="getColumnByTableId" resultType="TBaTableField">
+		SELECT 
+			<include refid="tBaTableFieldColumns"/>
+		FROM t_ba_table_field a
+		<include refid="tBaTableFieldJoins"/>
+		where a.table_id = #{tableId}
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_table_field(
+			id,
+			field_code,
+			field_name,
+			field_length,
+			field_type,
+			is_null,
+			is_show_form,
+			is_show_list,
+			control_type,
+			control_length,
+			is_query_condition,
+			query_type,
+			field_href,
+			field_valid_rule,
+			dict_table,
+			dict_code,
+			dict_text,
+			farther_table,
+			farther_field,
+			is_datebase_field,
+			list_sql,
+			table_id,
+			old_field_code,
+			sort,
+			create_date,
+			update_by,
+			update_date,
+			remarks
+		) VALUES (
+			#{id},
+			#{fieldCode},
+			#{fieldName},
+			#{fieldLength},
+			#{fieldType},
+			#{isNull},
+			#{isShowForm},
+			#{isShowList},
+			#{controlType},
+			#{controlLength},
+			#{isQueryCondition},
+			#{queryType},
+			#{fieldHref},
+			#{fieldValidRule},
+			#{dictTable},
+			#{dictCode},
+			#{dictText},
+			#{fartherTable},
+			#{fartherField},
+			#{isDatebaseField},
+			#{listSql},
+			#{tableId.id},
+			#{oldFieldCode},
+			#{sort},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_table_field SET 	
+			field_code = #{fieldCode},
+			field_name = #{fieldName},
+			field_length = #{fieldLength},
+			field_type = #{fieldType},
+			is_null = #{isNull},
+			is_show_form = #{isShowForm},
+			is_show_list = #{isShowList},
+			control_type = #{controlType},
+			control_length = #{controlLength},
+			is_query_condition = #{isQueryCondition},
+			query_type = #{queryType},
+			field_href = #{fieldHref},
+			field_valid_rule = #{fieldValidRule},
+			dict_table = #{dictTable},
+			dict_code = #{dictCode},
+			dict_text = #{dictText},
+			farther_table = #{fartherTable},
+			farther_field = #{fartherField},
+			is_datebase_field = #{isDatebaseField},
+			list_sql = #{listSql},
+			table_id = #{tableId.id},
+			old_field_code = #{oldFieldCode},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_ba_table_field
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE table_id = #{tableId.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<update id="deleteByConfigId">
+		DELETE FROM t_ba_table_field
+		<if test="tableId != null and tableId.id !=null and tableId.id != ''">
+		    WHERE table_id = #{tableId.id}
+		</if>
+	</update>
+	
+	<update id="deleteTBaTableFieldById">
+		DELETE FROM t_ba_table_field
+		<if test="id != null and id != ''">
+		    WHERE id = #{id}
+		</if>
+	</update>
+	
+	<select id="findDataBaseTableField" parameterType="String" resultType="TBaTableField">
+		select 
+	    a.COLUMN_NAME AS "fieldCode",
+	    a.DATA_LENGTH AS "fieldLength",
+	    a.DATA_TYPE AS "fieldType",
+	    a.NULLABLE AS "isNull"
+	    from user_tab_columns a where table_name=upper(#{tableName})	
+	</select>
+	
+	<select id="findDataFormTableField" resultType="TBaTableField" parameterType="TBaTableConfig">
+		select 
+		upper(a.field_code) AS "fieldCode",
+		a.field_name as "fieldName",
+	    a.field_length AS "fieldLength",
+	    decode(a.field_type,'01','VARCHAR2','02','NUMBER','03','NUMBER','04','DATE') AS "fieldType",
+	    decode(a.is_null,'01','Y','02','N') AS "isNull"
+		from t_ba_table_field a
+		where a.table_id = #{id}
+	</select>
+	
+	<select id="getFindData" resultType="TBaTableField" parameterType="String" >
+		select 
+			<include refid="tBaTableFieldColumns"/>
+		FROM t_ba_table_field a
+			<include refid="tBaTableFieldJoins"/>
+		where a.is_query_condition = #{isQueryCondition}
+		and a.table_id = #{tableId}
+		order by a.sort asc
+	</select>
+	
+</mapper>

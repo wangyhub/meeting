@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.stay.TbJoinStayDao">
+    
+	<sql id="tbJoinStayColumns">
+		a.id AS "id",
+		a.stay_id AS "stayId",
+		a.join_id AS "joinId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		c.USER_NAME AS "userName",
+		d.COMPANY_NAME AS "companyName",
+		b.POSITION AS "position"
+	</sql>
+	
+	<sql id="tbJoinStayJoins">
+		left join TB_JOIN b on a.JOIN_ID=b.ID
+		left join TB_USER c on b.USER_ID=c.ID
+		left join TB_MEETING_COMPANY d on b.COMPANY_ID=d.ID
+	</sql>
+
+	<select id="findList" resultType="TbJoinStay">
+		SELECT 
+			<include refid="tbJoinStayColumns"/>
+		FROM tb_join_stay a
+		<include refid="tbJoinStayJoins"/>
+		<where>
+			<if test="stayId != null and stayId != ''">
+				AND a.stay_id = #{stayId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_join_stay(
+			id,
+			stay_id,
+			join_id,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{stayId},
+			#{joinId},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_join_stay SET 	
+			stay_id = #{stayId},
+			join_id = #{joinId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_join_stay
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE stay_id = #{stayId}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>

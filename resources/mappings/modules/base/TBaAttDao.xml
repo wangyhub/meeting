@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaAttDao">
+    
+	<sql id="tBaAttColumns">
+		a.id AS "id",
+		a.use_state AS "useState",
+		a.office_id AS "office.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.sort AS "sort",
+		a.isrequired AS "isrequired",
+		a.name AS "name",
+		a.type AS "type.id",
+		a.file_id AS "fileId",
+		o3.name AS "office.name",
+		o4.label AS "type.label",
+		o4.value AS "type.value",
+		o5.file_name AS "file.fileName"
+	</sql>
+	
+	<sql id="tBaAttJoins">
+		LEFT JOIN sys_office o3 ON o3.id = a.office_id
+		LEFT JOIN sys_dict o4 ON o4.id = a.type
+		LEFT JOIN t_ba_file O5 ON o5.id = a.file_id
+	</sql>
+    
+	<select id="get" resultType="TBaAtt">
+		SELECT 
+			<include refid="tBaAttColumns"/>
+		FROM t_ba_att a
+		<include refid="tBaAttJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaAtt">
+		SELECT 
+			<include refid="tBaAttColumns"/>
+		FROM t_ba_att a
+		<include refid="tBaAttJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="office != null and office.id != null and office.id != ''">
+				AND a.office_id = #{office.id}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaAtt">
+		SELECT 
+			<include refid="tBaAttColumns"/>
+		FROM t_ba_att a
+		<include refid="tBaAttJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_att(
+			id,
+			use_state,
+			office_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			sort,
+			isrequired,
+			name,
+			file_id,
+			type
+		) VALUES (
+			#{id},
+			#{useState},
+			#{office.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{sort},
+			#{isrequired},
+			#{name},
+			#{fileId},
+			#{type.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_att SET 	
+			use_state = #{useState},
+			office_id = #{office.id},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			sort = #{sort},
+			isrequired = #{isrequired},
+			name = #{name},
+			file_id = #{fileId},
+			type = #{type.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE t_ba_att SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteFile">
+        UPDATE t_ba_att SET 
+            file_id = ''
+        WHERE id = #{id}
+    </update>
+	
+</mapper>

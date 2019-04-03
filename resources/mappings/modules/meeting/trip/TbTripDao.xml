@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.trip.TbTripDao">
+    
+	<sql id="tbTripColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.car_id AS "carId",
+		a.trip_time AS "tripTime",
+		a.trip_address AS "tripAddress",
+		a.call_man AS "callMan",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		b.CAR_NUM AS "carNum"
+	</sql>
+	
+	<sql id="carJoin">
+		left join TB_CAR b on a.CAR_ID=b.ID
+	</sql>
+
+	<sql id="joinTripJoin">
+		left join (
+			select TRIP_ID,count(JOIN_ID) joinNum  From TB_JOIN_TRIP
+			group by TRIP_ID
+		) c on a.ID=c.TRIP_ID
+	</sql>
+    
+	<select id="get" resultType="TbTrip">
+		SELECT 
+			<include refid="tbTripColumns"/>
+		FROM tb_trip a
+		<include refid="carJoin"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbTrip">
+		SELECT 
+			<include refid="tbTripColumns"/>
+			,c.joinNum as "joinNum"
+		FROM tb_trip a
+		<include refid="carJoin"/>
+		<include refid="joinTripJoin"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="findAll" parameterType="String" resultType="com.lw.modules.meeting.entity.model.TbTripContent">
+		select a.ID as tripId , a.CALL_MAN as carMan, a.REMARK as  remark ,  a.TRIP_TIME as tripTime, a.TRIP_ADDRESS as tripAddress,b.CAR_MODEL as carModel,b.CAR_NUM as carNum,b.MAN_PHONE as manPhone
+		from TB_TRIP a left join TB_CAR b on a.car_Id = b.id  left join TB_JOIN_TRIP c on  c.TRIP_ID  =  a.ID 	where c.JOIN_ID  =
+ 		(select b.ID AS id from TB_USER
+		a left join TB_JOIN b on a.ID = b.USER_ID where a.ID = #{tripId})
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_trip(
+			id,
+			meeting_id,
+			car_id,
+			trip_time,
+			trip_address,
+			call_man,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{carId},
+			#{tripTime},
+			#{tripAddress},
+			#{callMan},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_trip SET 	
+			car_id = #{carId},
+			trip_time = #{tripTime},
+			trip_address = #{tripAddress},
+			call_man = #{callMan},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_trip
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

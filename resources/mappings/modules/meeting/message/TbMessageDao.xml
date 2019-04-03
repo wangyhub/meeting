@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.message.TbMessageDao">
+    
+	<sql id="tbMessageColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.kind AS "kind",
+		a.type AS "type",
+		a.content AS "content",
+		a.status AS "status",
+		a.send_time AS "sendTime"
+	</sql>
+
+	<sql id="messageRecordJoin">
+		left join (
+			select MESSAGE_ID,count(ID) sendNum  From TB_MESSAGE_RECORD
+			group by MESSAGE_ID
+		) c on a.ID=c.MESSAGE_ID
+	</sql>
+    
+	<select id="get" resultType="TbMessage">
+		SELECT 
+			<include refid="tbMessageColumns"/>
+		FROM tb_message a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbMessage">
+		SELECT 
+			<include refid="tbMessageColumns"/>
+			,c.sendNum as "sendNum"
+		FROM tb_message a
+		<include refid="messageRecordJoin"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="kind != null and kind != ''">
+				AND a.kind = #{kind}
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content like '%'||#{content}||'%'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_message(
+			id,
+			meeting_id,
+			kind,
+			type,
+			content,
+			status,
+			send_time
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{kind},
+			#{type},
+			#{content},
+			#{status},
+			#{sendTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_message SET 	
+			meeting_id = #{meetingId},
+			kind = #{kind},
+			type = #{type},
+			content = #{content},
+			status = #{status},
+			send_time = #{sendTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_message
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

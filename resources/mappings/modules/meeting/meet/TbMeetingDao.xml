@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meet.TbMeetingDao">
+    
+	<sql id="tbMeetingColumns">
+		a.id AS "id",
+		a.meeting_name AS "meetingName",
+		a.sponsor AS "sponsor",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.meeting_address AS "meetingAddress",
+		a.point_x AS "pointX",
+		a.point_y AS "pointY",
+		a.person_num AS "personNum",
+		a.create_code AS "createCode",
+		a.is_station AS "isStation",
+		a.is_live AS "isLive",
+		a.is_meal AS "isMeal",
+		a.is_signin AS "isSignin",
+		a.is_news AS "isNews",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="tbMeetingJoins">
+	</sql>
+    
+	<select id="get" resultType="TbMeeting">
+		SELECT 
+			<include refid="tbMeetingColumns"/>
+		FROM tb_meeting a
+		<include refid="tbMeetingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbMeeting">
+		SELECT 
+			<include refid="tbMeetingColumns"/>
+		FROM tb_meeting a
+		<include refid="tbMeetingJoins"/>
+		<where>
+			<if test="createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbMeeting">
+		SELECT 
+			<include refid="tbMeetingColumns"/>
+		FROM tb_meeting a
+		<include refid="tbMeetingJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="showMeetingMap" resultType="com.lw.modules.meeting.entity.model.CommonModel" parameterType="java.lang.String">
+		SELECT MEETING_NAME as meetingName, to_char(START_TIME, 'yyyy-mm-dd hh24:mi:ss') as startTime,
+				to_char(END_TIME, 'yyyy-mm-dd hh24:mi:ss') as endTime, MEETING_ADDRESS as meetingAddress, POINT_X as pointX,
+				POINT_Y as pointY
+			FROM TB_MEETING
+		WHERE ID = #{meetingId}
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_meeting(
+			id,
+			meeting_name,
+			sponsor,
+			start_time,
+			end_time,
+			meeting_address,
+			point_x,
+			point_y,
+			person_num,
+			create_code,
+			is_station,
+			is_live,
+			is_meal,
+			is_signin,
+			is_news,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{meetingName},
+			#{sponsor},
+			#{startTime},
+			#{endTime},
+			#{meetingAddress},
+			#{pointX},
+			#{pointY},
+			#{personNum},
+			#{createCode},
+			#{isStation},
+			#{isLive},
+			#{isMeal},
+			#{isSignin},
+			#{isNews},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_meeting SET 	
+			meeting_name = #{meetingName},
+			sponsor = #{sponsor},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			meeting_address = #{meetingAddress},
+			point_x = #{pointX},
+			point_y = #{pointY},
+			person_num = #{personNum},
+			create_code = #{createCode},
+			is_station = #{isStation},
+			is_live = #{isLive},
+			is_meal = #{isMeal},
+			is_signin = #{isSignin},
+			is_news = #{isNews},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_meeting
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateStatus">
+		UPDATE tb_meeting SET
+			  status = #{status},
+			  update_by = #{updateBy.id},
+			  update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+</mapper>

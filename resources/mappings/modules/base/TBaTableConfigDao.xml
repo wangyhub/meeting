@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaTableConfigDao">
+    
+	<sql id="tBaTableConfigColumns">
+		a.id AS "id",
+		a.table_name AS "tableName",
+		a.content AS "content",
+		a.type AS "type",
+		a.relation_type AS "relationType",
+		a.is_pagination AS "isPagination",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.match_database as "matchDataBase",
+		a.menu_id as "menuId",
+		a.menu_parent_id as "menuParentId"
+	</sql>
+	
+	<sql id="tBaTableConfigJoins">
+	</sql>
+    
+	<select id="get" resultType="TBaTableConfig">
+		SELECT 
+			<include refid="tBaTableConfigColumns"/>
+		FROM t_ba_table_config a
+		<include refid="tBaTableConfigJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaTableConfig">
+		SELECT 
+			<include refid="tBaTableConfigColumns"/>
+		FROM t_ba_table_config a
+		<include refid="tBaTableConfigJoins"/>
+		<where>
+			<if test="tableName != null and tableName !=''">
+				a.table_name = #{tableName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaTableConfig">
+		SELECT 
+			<include refid="tBaTableConfigColumns"/>
+		FROM t_ba_table_config a
+		<include refid="tBaTableConfigJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="isExistTable" parameterType="string" resultType="Integer">
+	     select count(*) from user_tables where table_name = UPPer(#{tableName})
+	</select>
+	<select id="checkTableName" resultType="Integer">
+		select count(*)
+			from t_ba_table_config a
+		where a.table_name = #{tableName}
+	</select>
+	
+	<select id="findTBaTableConfigByTableName" resultType="TBaTableConfig">
+		select 
+			<include refid="tBaTableConfigColumns"/>
+				from t_ba_table_config a 
+			<include refid="tBaTableConfigJoins"/>
+		where a.table_name = #{tableName}
+	</select>
+	
+	<select id="findSonTableInfoByTableName" resultType="TBaTableConfig">
+		select
+			<include refid="tBaTableConfigColumns"/>
+				from t_ba_table_config a 
+			<include refid="tBaTableConfigJoins"/>
+		where a.id in
+			(select b.table_id from t_ba_table_field b where b.farther_table=#{tableName})
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_table_config(
+			id,
+			table_name,
+			content,
+			type,
+			relation_type,
+			is_pagination,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			match_database,
+			menu_id,
+			menu_parent_id
+		) VALUES (
+			#{id},
+			#{tableName},
+			#{content},
+			#{type},
+			#{relationType},
+			#{isPagination},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{matchDataBase},
+			#{menuId},
+			#{menuParentId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_table_config SET 	
+			table_name = #{tableName},
+			content = #{content},
+			type = #{type},
+			relation_type = #{relationType},
+			is_pagination = #{isPagination},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			match_database = #{matchDataBase},
+			menu_id = #{menuId},
+			menu_parent_id = #{menuParentId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_ba_table_config
+		WHERE id = #{id}
+	</update>
+	
+	<update id="exeSql" parameterType="java.util.Map">
+		${sql}
+	</update>
+	
+	<select id="findListBySql" parameterType="java.util.Map" >
+		${sql}
+	</select>
+</mapper>

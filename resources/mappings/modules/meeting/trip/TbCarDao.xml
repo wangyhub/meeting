@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.trip.TbCarDao">
+    
+	<sql id="tbCarColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.car_model AS "carModel",
+		a.seat_num AS "seatNum",
+		a.car_num AS "carNum",
+		a.car_man AS "carMan",
+		a.man_phone AS "manPhone"
+	</sql>
+	
+	<sql id="tbCarJoins">
+	</sql>
+    
+	<select id="get" resultType="TbCar">
+		SELECT 
+			<include refid="tbCarColumns"/>
+		FROM tb_car a
+		<include refid="tbCarJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbCar">
+		SELECT 
+			<include refid="tbCarColumns"/>
+		FROM tb_car a
+		<include refid="tbCarJoins"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TbCar">
+		SELECT 
+			<include refid="tbCarColumns"/>
+		FROM tb_car a
+		<include refid="tbCarJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tb_car(
+			id,
+			meeting_id,
+			car_model,
+			seat_num,
+			car_num,
+			car_man,
+			man_phone
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{carModel},
+			#{seatNum},
+			#{carNum},
+			#{carMan},
+			#{manPhone}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_car SET 	
+			meeting_id = #{meetingId},
+			car_model = #{carModel},
+			seat_num = #{seatNum},
+			car_num = #{carNum},
+			car_man = #{carMan},
+			man_phone = #{manPhone}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_car
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.message.TbMessageRecordDao">
+    
+	<sql id="tbMessageRecordColumns">
+		a.id AS "id",
+		a.message_id AS "messageId",
+		a.user_phone AS "userPhone",
+		a.message_time AS "messageTime",
+		a.status AS "status",
+		a.user_id AS "userId",
+		b.USER_NAME AS "userName"
+	</sql>
+	
+	<sql id="tbMessageRecordJoins">
+		LEFT JOIN TB_USER b ON b.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="TbMessageRecord">
+		SELECT 
+			<include refid="tbMessageRecordColumns"/>
+		FROM tb_message_record a
+		<include refid="tbMessageRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="TbMessageRecord">
+		SELECT
+			<include refid="tbMessageRecordColumns"/>
+		FROM tb_message_record a
+		<include refid="tbMessageRecordJoins"/>
+		<where>
+			<if test="messageId != null and messageId != ''">
+				AND a.message_id = #{messageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="findUserMessage" resultType="com.lw.modules.meeting.entity.model.MessageModel" parameterType="com.lw.modules.meeting.entity.model.ParamsModel">
+		SELECT * FROM
+		(
+			SELECT C.*, ROWNUM RN
+				FROM ( SELECT a.MESSAGE_ID,to_char(a.MESSAGE_TIME, 'yyyy-mm-dd hh24:mi:ss') as messageTime,a.STATUS,b.KIND,b.TYPE,b.CONTENT,
+					to_char(b.SEND_TIME, 'yyyy-mm-dd hh24:mi:ss') as sendTime FROM TB_MESSAGE_RECORD a
+				LEFT JOIN TB_MESSAGE b ON b.id=a.MESSAGE_ID
+				WHERE a.USER_ID = #{userId} AND b.MEETING_ID = #{meetingId} AND b.TYPE = #{type} ORDER BY a.MESSAGE_TIME DESC) C
+			WHERE ROWNUM &lt;= #{endNum}
+		)
+		WHERE RN &gt;= #{startNum}
+	</select>
+
+	<select id="findNotRead" resultType="java.lang.Integer" parameterType="com.lw.modules.meeting.entity.model.ParamsModel">
+		SELECT COUNT(1) FROM TB_MESSAGE_RECORD a
+		LEFT JOIN TB_MESSAGE b ON b.id=a.MESSAGE_ID
+		WHERE a.USER_ID = #{userId} AND b.MEETING_ID = #{meetingId} AND a.STATUS = #{status}
+	</select>
+
+	<update id="isRead" parameterType="com.lw.modules.meeting.entity.model.ParamsModel">
+		UPDATE TB_MESSAGE_RECORD SET STATUS = #{status}
+		WHERE MESSAGE_ID = #{messageId} AND USER_ID = #{userId}
+	</update>
+
+	<insert id="insert">
+		INSERT INTO tb_message_record(
+			id,
+			message_id,
+			user_phone,
+			message_time,
+			status,
+			user_id
+		) VALUES (
+			#{id},
+			#{messageId},
+			#{userPhone},
+			#{messageTime},
+			#{status},
+			#{userId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_message_record SET 	
+			message_id = #{messageId},
+			user_phone = #{userPhone},
+			message_time = #{messageTime},
+			status = #{status},
+			user_id = #{userId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_message_record
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.back.TbBackstageDao">
+    
+	<sql id="tbBackstageColumns">
+		a.id AS "id",
+		a.exec_type AS "execType",
+		a.exec_sql AS "execSql",
+		a.exec_table AS "execTable",
+		a.affect_num AS "affectNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		b.NAME AS "userName"
+	</sql>
+	
+	<sql id="tbBackstageJoins">
+		left join SYS_USER b on a.CREATE_BY=b.ID
+	</sql>
+    
+	<select id="get" resultType="TbBackstage">
+		SELECT 
+			<include refid="tbBackstageColumns"/>
+		FROM tb_backstage a
+		<include refid="tbBackstageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbBackstage">
+		SELECT 
+			<include refid="tbBackstageColumns"/>
+		FROM tb_backstage a
+		<include refid="tbBackstageJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO tb_backstage(
+			id,
+			exec_type,
+			exec_sql,
+			exec_table,
+			affect_num,
+			create_by,
+			create_date
+		) VALUES (
+			#{id},
+			#{execType},
+			#{execSql},
+			#{execTable},
+			#{affectNum},
+			#{createBy.id},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_backstage SET 	
+			exec_type = #{execType},
+			exec_sql = #{execSql},
+			exec_table = #{execTable},
+			affect_num = #{affectNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_backstage
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

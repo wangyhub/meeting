@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.meeting.dao.meal.TbMealDao">
+    
+	<sql id="tbMealColumns">
+		a.id AS "id",
+		a.meeting_id AS "meetingId",
+		a.meal_name AS "mealName",
+		a.meal_address AS "mealAddress",
+		a.meal_phone AS "mealPhone",
+		a.meal_date AS "mealDate",
+		a.meal_type AS "mealType",
+		a.meal_kind AS "mealKind",
+		a.is_table AS "isTable",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+
+	<sql id="joinMealJoin">
+		left join (
+		select meal_id,count(JOIN_ID) joinNum  From tb_join_meal
+		group by meal_id
+		) c on a.ID=c.meal_id
+	</sql>
+    
+	<select id="get" resultType="TbMeal">
+		SELECT 
+			<include refid="tbMealColumns"/>
+		FROM tb_meal a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TbMeal">
+		SELECT 
+			<include refid="tbMealColumns"/>
+			,c.joinNum as "joinNum"
+		FROM tb_meal a
+		<include refid="joinMealJoin"/>
+		<where>
+			<if test="meetingId != null and meetingId != ''">
+				AND a.meeting_id = #{meetingId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+
+	<insert id="insert">
+		INSERT INTO tb_meal(
+			id,
+			meeting_id,
+			meal_name,
+			meal_address,
+			meal_phone,
+			meal_date,
+			meal_type,
+			meal_kind,
+			is_table,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{meetingId},
+			#{mealName},
+			#{mealAddress},
+			#{mealPhone},
+			#{mealDate},
+			#{mealType},
+			#{mealKind},
+			#{isTable},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tb_meal SET 	
+			meeting_id = #{meetingId},
+			meal_name = #{mealName},
+			meal_address = #{mealAddress},
+			meal_phone = #{mealPhone},
+			meal_date = #{mealDate},
+			meal_type = #{mealType},
+			meal_kind = #{mealKind},
+			is_table = #{isTable},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM tb_meal
+		WHERE id = #{id}
+	</update>
+
+	<select id="getMealInfoListByMeetingId" resultType="com.lw.modules.meeting.entity.model.MealInfo">
+
+		select a.ID as mealId,
+		 a.MEETING_ID as meetingId,
+		 a.MEAL_NAME as mealName,
+		 a.MEAL_ADDRESS as mealAddress,
+		 a.MEAL_PHONE as mealPhone,
+		 a.MEAL_DATE as mealDate,
+		 a.MEAL_TYPE as mealType,
+		 a.MEAL_KIND as mealKind,
+		 a.IS_TABLE as isTable,
+		 b.TABLE_NUM as tableNum
+		 from (
+            select ID,MEETING_ID,MEAL_NAME,MEAL_ADDRESS,MEAL_PHONE,MEAL_DATE,MEAL_TYPE,MEAL_KIND,IS_TABLE from TB_MEAL where MEETING_ID= #{meetingId} order by MEAL_DATE
+        ) a left join (
+            select jm.MEAL_ID as mealId,jm.TABLE_NUM from TB_MEAL m left join TB_JOIN_MEAL jm on m.ID = jm.MEAL_ID join TB_JOIN j on j.ID = jm.JOIN_ID
+                where m.MEETING_ID = #{meetingId} and j.USER_ID = #{userId}
+        ) b on a.ID = b.mealId
+	</select>
+
+    <select id="getMealTableByMealIdAndUserId" resultType="com.lw.modules.meeting.entity.model.MealTable">
+        select jm.ID as tableId,
+                jm.MEAL_ID as mealId,
+                jm.JOIN_ID as joinId,
+                jm.TABLE_NUM as tableNum
+        from TB_JOIN_MEAL jm join TB_JOIN j on jm.JOIN_ID = j.ID
+        where jm.MEAL_ID = #{mealId} and j.USER_ID = #{userId}
+    </select>
+</mapper>

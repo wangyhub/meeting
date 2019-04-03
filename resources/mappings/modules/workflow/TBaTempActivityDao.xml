@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.workflow.dao.TBaTempActivityDao">
+    
+	<sql id="tBaTempActivityColumns">
+		a.id AS "id",
+		a.activity_name AS "activityName",
+		a.logo AS "logo",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.remarks AS "remarks",
+		b.name AS "company.name",
+		b.id AS "company.id"
+	</sql>
+	
+	<sql id="tBaTempActivityJoins">
+	    LEFT JOIN sys_office b ON b.id = a.company_id
+	</sql>
+    
+	<select id="get" resultType="TBaTempActivity">
+		SELECT 
+			<include refid="tBaTempActivityColumns"/>
+		FROM t_ba_temp_activity a
+		<include refid="tBaTempActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TBaTempActivity">
+		SELECT 
+			<include refid="tBaTempActivityColumns"/>
+		FROM t_ba_temp_activity a
+		<include refid="tBaTempActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="activityName != null and activityName != ''">
+				AND a.activity_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{activityName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{activityName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{activityName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TBaTempActivity">
+		SELECT 
+			<include refid="tBaTempActivityColumns"/>
+		FROM t_ba_temp_activity a
+		<include refid="tBaTempActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_ba_temp_activity(
+			id,
+			activity_name,
+			logo,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			remarks,
+			company_id
+		) VALUES (
+			#{id},
+			#{activityName},
+			#{logo},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{remarks},
+			#{company.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ba_temp_activity SET 	
+			activity_name = #{activityName},
+			logo = #{logo},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			company_id = #{company.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE t_ba_temp_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="checkActivtyName" resultType="TBaTempActivity">
+	   SELECT 
+            <include refid="tBaTempActivityColumns"/>
+         FROM t_ba_temp_activity a
+       <include refid="tBaTempActivityJoins"/>
+        WHERE a.del_flag != 1
+        <if test="activityName != null and activityName != ''">
+            AND a.activity_name = #{activityName}
+        </if>
+	    <if test="id != null and id != ''">
+            AND a.id != #{id}
+        </if>
+	</select>
+	
+	<select id="checkActivtyLogo" resultType="TBaTempActivity">
+        SELECT 
+            <include refid="tBaTempActivityColumns"/>
+          FROM t_ba_temp_activity a
+        <include refid="tBaTempActivityJoins"/>
+         WHERE a.del_flag != 1
+        <if test="logo !=null and logo !=''">
+            AND a.logo = #{logo}
+        </if>
+        <if test="id != null and id = ''">
+            AND a.id != #{id}
+        </if>
+    </select>
+	<select id="getByTBaTempActivity" resultType="TBaTempActivity">
+		SELECT 
+			<include refid="tBaTempActivityColumns"/>
+		FROM t_ba_temp_activity a
+		<include refid="tBaTempActivityJoins"/>
+		WHERE 1=1 
+		<if test="logo !=null and logo !=''">
+		   and a.logo = #{logo}
+		</if>
+	</select>	
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lw.modules.base.dao.TBaPublicBeanDao">
+    
+    <select id="findList" resultType="TBaPublicBean">
+    	${queryStr}
+    </select>
+    
+    <select id="exeSql" parameterType="java.util.Map" resultType="TBaPublicBean">
+    	${sql}
+    </select>
+    
+    <select id="doSql" parameterType="java.util.Map" resultType="TBaPublicBean">
+    	${sql}
+    </select>
+    
+    <insert id="save" parameterType="java.util.Map">
+    	${sql}
+    </insert>
+    
+    <update id="delete" parameterType="java.util.Map">
+    	${sql}
+	</update>
+    
+</mapper>
